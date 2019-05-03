@@ -1,0 +1,72 @@
+#!/usr/bin/env sh
+
+# Setup.
+VERSION="0.1"
+
+version() {
+	printf "git-pace version %s\n" "$VERSION"
+
+	git --version
+}
+
+# Helpers.
+current_branch() {
+	basename "$(git symbolic-ref HEAD)"
+}
+
+current_epoch() {
+	date +%s
+}
+
+user_email() {
+	git config user.email
+}
+
+pace() {
+	# cd to git root directory
+	cd "$(git rev-parse --show-toplevel)"
+
+	git add -A
+
+	if [ -z "$1" ]; then
+		message=" -- via Git Pace"
+	else
+		message="$*"
+	fi
+
+	git commit -m "$message" --no-verify
+
+	for remote in $(git remote); do
+		git push --no-verify --set-upstream "${remote}" || true
+	done
+
+  if [ "$(git stash list)" != '' ]; then
+	  for sha in $(git rev-list -g stash); do
+		  git push --no-verify origin "$sha":refs/heads/"$(current_branch)"-stash-"$sha"
+	  done
+  fi
+
+	printf "\n\nGit Pace done.\n"
+}
+
+display_help() {
+	cat <<-EOF
+  usage:
+    git pace [options] [COMMAND] [args]
+  commands:
+    git pace                        Add, commit, and push to remote fast
+    git pace <message>              Execute git pace with <message> for commit message
+  options:
+    -V, --version                   Output current version of git-pace
+    -h, --help                      Display this help information
+EOF
+	exit 0
+}
+
+
+case $1 in
+	-V|--version) version; exit 0 ;;
+	-h|--help) display_help; exit 0 ;;
+esac
+
+pace "$@"
