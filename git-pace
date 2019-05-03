@@ -54,7 +54,7 @@ display_help() {
   usage:
     git pace [options] [COMMAND] [args]
   commands:
-    git pace                        Add, commit, and push to remote fast
+    git pace                        Add, commit, and push to remote with PACE :)
     git pace <message>              Execute git pace with <message> for commit message
   options:
     -V, --version                   Output current version of git-pace
